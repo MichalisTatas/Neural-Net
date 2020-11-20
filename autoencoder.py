@@ -2,6 +2,7 @@ import matplotlib.pyplot as plt
 from tensorflow.keras.layers import Input, Conv2D, MaxPooling2D, UpSampling2D
 from tensorflow.keras.models import Model, load_model
 from tensorflow.keras.optimizers import RMSprop
+from tensorflow.keras.metrics import MeanSquaredError, AUC
 
 
 def getAutoencoder(x, y,
@@ -42,12 +43,13 @@ def getAutoencoder(x, y,
         return decoder(encoder(input_img))
 
     autoencoder = Model(input_img, autoencoder(input_img))
-    autoencoder.compile(loss=lossFunction, optimizer=RMSprop())
+    autoencoder.compile(loss=lossFunction, optimizer=RMSprop(),
+                        metrics=[MeanSquaredError(), AUC()])
 
     return autoencoder
 
 
-def plotModelLoss(model_train, epochs):
+def plotModelLoss(model_train, epochs, name):
     loss = model_train.history['loss']
     val_loss = model_train.history['val_loss']
     epochs = range(epochs)
@@ -57,4 +59,4 @@ def plotModelLoss(model_train, epochs):
     plt.title('Training and validation loss')
     plt.legend()
     plt.show()
-    plt.savefig("loss_graph_softmax_sigmoid.png")
+    plt.savefig(name)
