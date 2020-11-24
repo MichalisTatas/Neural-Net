@@ -1,8 +1,21 @@
+import numpy as np
 import matplotlib.pyplot as plt
+
+from util import extract_data, plotModelLoss
+from sklearn.model_selection import train_test_split
 from tensorflow.keras.layers import Input, Conv2D, MaxPooling2D, UpSampling2D
 from tensorflow.keras.models import Model, load_model
 from tensorflow.keras.optimizers import RMSprop
-from tensorflow.keras.metrics import MeanSquaredError, AUC
+from tensorflow.keras.metrics import MeanSquaredError, AUC, Accuracy
+
+
+data, x, y = extract_data("./data/t10k-images-idx3-ubyte")
+
+data = data.reshape(-1, x, y, 1)  # img_num * x * y * 1
+data = data / np.max(data)
+
+train_X, valid_X, train_ground, valid_ground = train_test_split(
+    data, data, test_size=0.25, shuffle=42)
 
 
 def getAutoencoder(x, y,
@@ -44,19 +57,42 @@ def getAutoencoder(x, y,
 
     autoencoder = Model(input_img, autoencoder(input_img))
     autoencoder.compile(loss=lossFunction, optimizer=RMSprop(),
-                        metrics=[MeanSquaredError(), AUC()])
+                        metrics=[MeanSquaredError(), AUC(), Accuracy()])
 
     return autoencoder
 
 
-def plotModelLoss(model_train, epochs, name):
-    loss = model_train.history['loss']
-    val_loss = model_train.history['val_loss']
-    epochs = range(epochs)
-    plt.figure()
-    plt.plot(epochs, loss, 'bo', label='Training loss')
-    plt.plot(epochs, val_loss, 'b', label='Validation loss')
-    plt.title('Training and validation loss')
-    plt.legend()
-    plt.show()
-    plt.savefig(name)
+batch_size = 128
+epochs = 50
+# autoencoder = getAutoencoder(
+#     x=x, y=y, activationFunction="softmax", lastActivationFunction="sigmoid", lossFunction="mean_squared_error")
+# autoencoder.summary()
+
+# autoencoder_train = autoencoder.fit(train_X, train_ground, batch_size=batch_size,
+#                                     epochs=epochs, verbose=1, validation_data=(valid_X, valid_ground))
+
+# autoencoder.save("models/autoencoder_softmax_sigmoid")
+# ploting loss graph
+# plotModelLoss(autoencoder_train, epochs,
+#               "models/model_softmax_sigmoid/plot.png")
+
+autoencoder = load_model("models/autoencoder_softmax_sigmoid")
+
+results = autoencoder.evaluate(data, data, batch_size=128)
+print("test loss, test acc:", results)
+
+pred = autoencoder.predict(data)
+plt.figure(figsize=(20, 4))
+print("Test Images")
+for i in range(10):
+    plt.subplot(2, 10, i+1)
+    plt.imshow(data[i, ..., 0], cmap='gray')
+plt.show()
+plt.savefig("original.png")
+plt.figure(figsize=(20, 4))
+print("Reconstruction of Test Images")
+for i in range(10):
+    plt.subplot(2, 10, i+1)
+    plt.imshow(pred[i, ..., 0], cmap='gray')
+plt.show()
+plt.savefig("result.png")
