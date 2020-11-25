@@ -1,3 +1,5 @@
+import sys
+import getopt
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -8,8 +10,22 @@ from tensorflow.keras.models import Model, load_model
 from tensorflow.keras.optimizers import RMSprop
 from tensorflow.keras.metrics import MeanSquaredError, AUC, Accuracy
 
+inputFile = ""
 
-data, x, y = extract_data("./data/t10k-images-idx3-ubyte")
+try:
+    opts, args = getopt.getopt(sys.argv, "p:", ["help"])
+except getopt.GetoptError:
+    print("usage: autoencoder.py -p <dataset>")
+    sys.exit(2)
+for opt, arg in opts:
+    if opt in ("-p"):
+        inputfile = arg
+    elif opt in ("--help"):
+        print("usage: autoencoder.py -p <dataset>")
+        sys.exit(1)
+
+
+data, x, y = extract_data(inputFile)
 
 data = data.reshape(-1, x, y, 1)  # img_num * x * y * 1
 data = data / np.max(data)

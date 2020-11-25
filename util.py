@@ -17,6 +17,19 @@ def extract_data(filename):
         return data, x, y
 
 
+def extract_labels(filename):
+
+    with open(filename, "rb") as f:
+        f.read(4)
+        num_images = int.from_bytes(f.read(4), "big", signed=True)
+        buf = f.read(num_images)
+        labels = np.frombuffer(buf, dtype=np.uint8)
+        labels = labels.reshape(num_images).astype(np.float32)
+        f.close()
+
+        return labels
+
+
 def plotModelLoss(model_train, epochs, name):
     loss = model_train.history['loss']
     val_loss = model_train.history['val_loss']
