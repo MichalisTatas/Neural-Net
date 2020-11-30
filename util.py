@@ -39,5 +39,5 @@ def plotModelLoss(model_train, epochs, name):
     plt.plot(epochs, val_loss, "b", label="Validation loss")
     plt.title("Training and validation loss")
     plt.legend()
-    plt.show()
+    # plt.show()
     plt.savefig(name)

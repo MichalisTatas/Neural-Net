@@ -3,7 +3,7 @@ import numpy as np
 import sys
 import getopt
 
-from util import extract_data, extract_labels
+from util import extract_data, extract_labels, plotModelLoss
 from sklearn.model_selection import train_test_split
 from tensorflow.keras.layers import Conv2D, MaxPooling2D, Dense, Flatten
 from tensorflow.keras.models import Model, load_model
@@ -87,3 +87,6 @@ model_train = model.fit(
 
 test_loss, test_acc = model.evaluate(test_data, test_labels, verbose=2)
 print("\nTest accuracy:", test_acc)
+
+
+plotModelLoss(model_train, epochs, "models/loser.png")
