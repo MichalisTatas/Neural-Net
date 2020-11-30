@@ -29,32 +29,28 @@ lossFunction = "mean_squared_error"
 
 def get_model(input_img, autoencoder=""):
     conv1 = Conv2D(32, (3, 3), activation=activationFunction,
-                   padding='same', trainable=False)(input_img)
+                   padding='same')(input_img)
 
     pool1 = MaxPooling2D(pool_size=(2, 2))(conv1)
 
     conv2 = Conv2D(64, (3, 3), activation=activationFunction,
-                   padding='same', trainable=False)(pool1)
+                   padding='same')(pool1)
 
     pool2 = MaxPooling2D(pool_size=(2, 2))(conv2)
 
     conv3 = Conv2D(128, (3, 3), activation=activationFunction,
-                   padding='same', trainable=False)(pool2)
+                   padding='same')(pool2)
 
     flat = Flatten()(conv3)
-    dense = Dense(100, activation=activationFunction)(flat)
+    dense = Dense(1000, activation=activationFunction)(flat)
     output = Dense(1, activation=activationFunction)(dense)
 
     return output
 
 
 autoencoder = load_model("models/autoencoder_softmax_sigmoid")
-# flat = Flatten(autoencoder.layers[5].output)
-# dense = Dense(100, activation=activationFunction)(flat)
-# output = Dense(10, activation=lastActivationFunction)(dense)
 
 input_img = Input(shape=(x, y, inChannel))
-# model = Model(inputs=autoencoder.input, outputs=output)
 model = Model(input_img, get_model(input_img, autoencoder))
 model.summary()
 
@@ -62,15 +58,20 @@ model.layers[1].set_weights(autoencoder.layers[1].get_weights())
 model.layers[3].set_weights(autoencoder.layers[3].get_weights())
 model.layers[5].set_weights(autoencoder.layers[5].get_weights())
 
+model.layers[1].trainable = False
+model.layers[3].trainable = False
+model.layers[5].trainable = False
 
 model.compile(loss=lossFunction, optimizer=RMSprop(),
-              metrics=[Accuracy()])
+              metrics=Accuracy())
 
 batch_size = 128
-epochs = 50
+epochs = 5
 model_train = model.fit(train_X, train_ground, batch_size=batch_size,
                         epochs=epochs, verbose=1, validation_data=(valid_X, valid_ground))
 
+
+epochs = 5
 model.layers[1].trainable = True
 model.layers[3].trainable = True
 model.layers[5].trainable = True
