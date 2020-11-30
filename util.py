@@ -31,13 +31,13 @@ def extract_labels(filename):
 
 
 def plotModelLoss(model_train, epochs, name):
-    loss = model_train.history['loss']
-    val_loss = model_train.history['val_loss']
+    loss = model_train.history["loss"]
+    val_loss = model_train.history["val_loss"]
     epochs = range(epochs)
     plt.figure()
-    plt.plot(epochs, loss, 'bo', label='Training loss')
-    plt.plot(epochs, val_loss, 'b', label='Validation loss')
-    plt.title('Training and validation loss')
+    plt.plot(epochs, loss, "bo", label="Training loss")
+    plt.plot(epochs, val_loss, "b", label="Validation loss")
+    plt.title("Training and validation loss")
     plt.legend()
     plt.show()
     plt.savefig(name)
