@@ -1,5 +1,4 @@
 import sys
-import getopt
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -10,19 +9,39 @@ from tensorflow.keras.models import Model, load_model
 from tensorflow.keras.optimizers import RMSprop
 from tensorflow.keras.metrics import MeanSquaredError, AUC, Accuracy
 
-inputFile = ""
+    # ari8mos sineliktikwn strwmatwn
+    # mege8ow sineliktinwn filtrwn
+    # ari8mos sineliktikwn filtrwn ana strwma
+    # epochs
+    # batch_size
+    # pli8os neurwnwn sto fc layer
+
+print(str(sys.argv[1]))
+
+inputFile = (str(sys.argv[1]))
 
 try:
-    opts, args = getopt.getopt(sys.argv, "p:", ["help"])
-except getopt.GetoptError:
-    print("usage: autoencoder.py -p <dataset>")
-    sys.exit(2)
-for opt, arg in opts:
-    if opt in ("-p"):
-        inputfile = arg
-    elif opt in ("--help"):
-        print("usage: autoencoder.py -p <dataset>")
-        sys.exit(1)
+    batch_size = int(input("please enter batch_size : "))
+except ValueError:
+    print ("batch_size must be an integer")
+    sys.exit(1)
+
+try:
+    epochs = input("please enter epochs number : ")
+except ValueError:
+    print ("epochs must be an integer")
+    sys.exit(1)
+
+try:
+    neurons_fc_layer = input("please enter number of neurons in fc layer : ")
+except ValueError:
+    print ("neurons_fc_layer must be an integer")
+    sys.exit(1)
+
+
+print(batch_size, epochs)
+# batch_size = 128
+# epochs = 50
 
 
 data, x, y = extract_data(inputFile)
@@ -93,8 +112,6 @@ def getAutoencoder(
     return autoencoder
 
 
-batch_size = 128
-epochs = 50
 # autoencoder = getAutoencoder(
 #     x=x, y=y, activationFunction="softmax", lastActivationFunction="sigmoid", lossFunction="mean_squared_error")
 # autoencoder.summary()

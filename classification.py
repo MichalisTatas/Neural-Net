@@ -1,5 +1,7 @@
 import tensorflow as tf
 import numpy as np
+import sys
+import getopt
 
 from util import extract_data, extract_labels
 from sklearn.model_selection import train_test_split
@@ -7,10 +9,37 @@ from tensorflow.keras.layers import Conv2D, MaxPooling2D, Dense, Flatten
 from tensorflow.keras.models import Model, load_model
 from tensorflow.keras.metrics import Accuracy
 
-train_data, x, y = extract_data("data/train-images-idx3-ubyte")
-test_data, x, y = extract_data("data/t10k-images-idx3-ubyte")
-train_labels = extract_labels("data/train-labels-idx1-ubyte")
-test_labels = extract_labels("data/t10k-labels-idx1-ubyte")
+argv = sys.argv[1:]
+
+if len(sys.argv) != 11:
+    print ("error command must look like this : python classification.py -d <training set> -d1 <training labels> -t <testset> -t1 <test labels> -model <autoencoder h5>")
+    sys.exit(-1)
+
+try:
+    opts, args = getopt.getopt(argv,"d:t:", ["d1=","t1=","model="])
+except getopt.GetoptError:
+        print ("error command must look like this : python classification.py -d <training set> -d1 <training labels> -t <testset> -t1 <test labels> -model <autoencoder h5>")
+        sys.exit(1)
+for option, argument in opts:
+    if   option == '-d':
+        training_set = argument
+
+    elif option in ("--d1"):
+        training_labels = argument
+
+    elif option == '-t':
+        test_set = argument
+
+    elif option in ("--t1"):
+        test_labels = argument
+
+    elif option in ("--model"):
+        model = argument
+
+train_data, x, y = extract_data(training_set)
+test_data, x, y = extract_data(training_labels)
+train_labels = extract_labels(test_set)
+test_labels = extract_labels(test_labels)
 
 inChannel = 1
 train_data = train_data.reshape(-1, x, y, inChannel)
@@ -26,7 +55,7 @@ train_X, valid_X, train_Y, valid_Y = train_test_split(
     train_data, train_labels, test_size=0.25, shuffle=42
 )
 
-autoencoder = load_model("models/autoencoder_softmax_sigmoid")
+autoencoder = load_model(model)
 
 output = Flatten()(autoencoder.layers[5].output)
 output = Dense(128, activation="sigmoid")(output)
