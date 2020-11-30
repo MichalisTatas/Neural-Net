@@ -210,6 +210,14 @@ if __name__ == "__main__":
             plt.savefig("result.png")
 
         elif (answer == 3):
+
+            # havent tested the # ones
+            # try:
+            #     answer = str(input("please give path : "))
+            # except ValueError:
+            #     print ("path must be a string")
+            #     sys.exit(1)
+            # autoencoder.save(path)
             autoencoder.save("models/autoencoder_softmax_sigmoid")
             break
 
