@@ -150,7 +150,7 @@ def newModel():
     model.compile(
         loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
         optimizer="adam",
-        metrics=["accuracy"],
+        metrics=["accuracy", evalF, evalPrecision, evalRecall],
     )
 
     train_X, valid_X, train_Y, valid_Y = train_test_split(
@@ -181,9 +181,10 @@ def newModel():
             model.save("classification.h5", save_format="h5")
             print("Model saves as: classification.h5")
         elif answer == 2:
-            plotLoss(model_train, "model_loss.png")
-            plotAccuracy(model_train, "model_accuracy")
-            # plotClassificationMetrics(model_train, "model_metrics.png")
+            plotLoss(model_train, "classification_loss.png")
+            plotAccuracy(model_train, "classification_accuracy")
+            plotClassificationMetrics(
+                model_train, "classification_metrics.png")
         elif answer == 3:
             break
         else:
@@ -195,7 +196,12 @@ def newModel():
 def modelPredict(model, test_data, test_labels):
     predictions = model.predict(test_data)
 
-    print(predictions[0])
+    suc = 0
+    for i in range(len(predictions)):
+        if np.argmax(predictions[i]) == int(test_labels[i]):
+            suc += 1
+
+    print("\nPredicted correclty", suc, "out of", len(test_data), "images\n")
 
     num_rows = 5
     num_cols = 3

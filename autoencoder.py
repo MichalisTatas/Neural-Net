@@ -125,8 +125,8 @@ def getAutoencoder(
 
 def newModel():
     batch_size, epochs = getParameters()
-    activationFunction = "softmax"
-    lastActivationFunction = "softmax"
+    activationFunction = "linear"
+    lastActivationFunction = "linear"
     filters = (3, 3)
 
     autoencoder = getAutoencoder(
@@ -163,7 +163,9 @@ def newModel():
             print("Answer must be an integer")
 
         if answer == 1:
-            autoencoder.save(str(input("Provide the name of the file: ")))
+            # name = str(input("Provide the name of the file: "))
+            autoencoder.save("autoencoder.h5", save_format="h5")
+            print("Model saves as: autoencoder.h5")
         elif answer == 2:
             plotLoss(autoencoder_train, "autoencoder_loss.png")
             plotAccuracy(autoencoder_train, "autoencoder_accuracy.png")
