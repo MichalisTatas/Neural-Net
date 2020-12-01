@@ -41,3 +41,29 @@ def plotModelLoss(model_train, epochs, name):
     plt.legend()
     # plt.show()
     plt.savefig(name)
+
+def plotAllMetrics(model, epochs):
+
+    epochs = range(epochs)
+
+    loss = model.history["loss"]
+    accuracy = model.history["accuracy"]
+    precision = model.history["evalPrecision"]
+    recall = model.history["evalRecall"]
+    f = model.history["evalF"]
+    plt.plot(epochs, loss, label="loss")
+    plt.plot(epochs, accuracy, label="accuracy")
+
+    plt.xlabel('loss')
+    plt.ylabel('metrics')
+    # plt.legend(loc='best')
+    # plt.savefig('images/emiris.png')
+    plt.legend()
+    plt.show()
+
+    plt.figure()
+    plt.plot(epochs, f, label="f")
+    plt.plot(epochs, precision, label="precision")
+    plt.plot(epochs, recall, label="recall")
+    plt.legend()
+    plt.show()
