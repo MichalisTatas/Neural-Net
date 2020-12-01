@@ -2,7 +2,7 @@ import sys
 import numpy as np
 import matplotlib.pyplot as plt
 
-from util import extract_data, plotLoss, plotAccuracy
+from util import extract_data, plotLoss, plotAccuracy, getModel
 from sklearn.model_selection import train_test_split
 from tensorflow.keras.layers import Input, Conv2D, MaxPooling2D, UpSampling2D
 from tensorflow.keras.models import Model, load_model
@@ -24,13 +24,13 @@ data = data / np.max(data)
 
 def getParameters():
     try:
-        batch_size = int(input("please enter batch_size : "))
+        batch_size = int(input("Please enter batch_size: "))
     except ValueError:
         print("batch_size must be an integer")
         sys.exit(1)
 
     try:
-        epochs = int(input("please enter epochs number : "))
+        epochs = int(input("Please enter epochs number: "))
     except ValueError:
         print("epochs must be an integer")
         sys.exit(1)
@@ -160,28 +160,14 @@ def newModel():
         if answer == 1:
             autoencoder.save(str(input("Provide the name of the file: ")))
         elif answer == 2:
-            plotLoss(autoencoder_train, "model_loss.png")
-            plotAccuracy(autoencoder_train, "model_accuracy")
+            plotLoss(autoencoder_train, "autoencoder_loss.png")
+            plotAccuracy(autoencoder_train, "autoencoder_accuracy.png")
         elif answer == 3:
             break
         else:
             print("Invalid input")
 
     return autoencoder
-
-
-def getModel():
-    while True:
-        file = str(input("Please provide the file name: "))
-        try:
-            model = load_model(file)
-            break
-        except IOError:
-            print("File name:", file, "dones't exist")
-        except ImportError:
-            print("File is corrupted")
-
-    return model
 
 
 if __name__ == "__main__":
@@ -201,6 +187,9 @@ if __name__ == "__main__":
             plotPrediction(autoencoder, data)
         elif answer == 2:  # Load Model
             autoencoder = getModel()
+            autoencoder.summary()
+            result = autoencoder.evaluate(data, data)
+            print("Result:", result)
             plotPrediction(autoencoder, data)
         elif answer == 3:
             break

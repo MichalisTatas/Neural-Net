@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
+from tensorflow.keras.models import load_model
 
 
 def extract_data(filename):
@@ -30,56 +31,81 @@ def extract_labels(filename):
         return labels
 
 
+def getModel():
+    while True:
+        file = str(input("Please provide the file name: "))
+        try:
+            model = load_model(file)
+            break
+        except IOError:
+            print("File name:", file, "dones't exist")
+        except ImportError:
+            print("File is corrupted")
+
+    return model
+
+
 def plotLoss(model, name):
     # summarize history for loss
-    plt.figure()
+    # plt.figure()
     plt.plot(model.history["loss"])
     plt.plot(model.history["val_loss"])
     plt.title("model loss")
     plt.ylabel("loss")
     plt.xlabel("epoch")
     plt.legend(["train", "validation"], loc="upper left")
-    plt.show()
     plt.savefig(name)
+    plt.show()
 
 
 def plotAccuracy(model, name):
     # summarize history for accuracy
-    plt.figure()
+    # plt.figure()
     plt.plot(model.history["accuracy"])
     plt.plot(model.history["val_accuracy"])
     plt.title("model accuracy")
     plt.ylabel("accuracy")
     plt.xlabel("epoch")
     plt.legend(["train", "validation"], loc="upper left")
-    plt.show()
     plt.savefig(name)
-
-
-def plotAllMetrics(model, epochs):
-
-    epochs = range(epochs)
-
-    loss = model.history["loss"]
-    accuracy = model.history["accuracy"]
-    precision = model.history["evalPrecision"]
-    recall = model.history["evalRecall"]
-    f = model.history["evalF"]
-
-    plt.plot(epochs, loss, label="loss")
-    plt.plot(epochs, accuracy, label="accuracy")
-
-    plt.xlabel("loss")
-    plt.ylabel("metrics")
-    # plt.legend(loc='best')
-    plt.legend()
-    plt.savefig("images/emiris.png")
     plt.show()
 
-    plt.figure()
-    plt.plot(epochs, f, label="f")
-    plt.plot(epochs, precision, label="precision")
-    plt.plot(epochs, recall, label="recall")
-    plt.legend()
-    plt.savefig("images/emiris2.png")
-    plt.show()
+
+class_names = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"]
+
+
+def plot_image(i, predictions_array, true_label, img):
+    true_label, img = true_label[i], img[i]
+    plt.grid(False)
+    plt.xticks([])
+    plt.yticks([])
+
+    plt.imshow(img, cmap=plt.cm.binary)
+
+    predicted_label = np.argmax(predictions_array)
+    if predicted_label == true_label:
+        color = "blue"
+    else:
+        color = "red"
+
+    plt.xlabel(
+        "{} {:2.0f}% ({})".format(
+            class_names[predicted_label],
+            100 * np.max(predictions_array),
+            class_names[int(true_label)],
+        ),
+        color=color,
+    )
+
+
+def plot_value_array(i, predictions_array, true_label):
+    true_label = true_label[i]
+    plt.grid(False)
+    plt.xticks(range(10))
+    plt.yticks([])
+    thisplot = plt.bar(range(10), predictions_array, color="#777777")
+    plt.ylim([0, 1])
+    predicted_label = np.argmax(predictions_array)
+
+    thisplot[predicted_label].set_color("red")
+    thisplot[true_label].set_color("blue")

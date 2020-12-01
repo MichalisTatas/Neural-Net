@@ -1,9 +1,18 @@
-import tensorflow as tf
-import numpy as np
 import sys
 import getopt
+import numpy as np
+import tensorflow as tf
+import matplotlib.pyplot as plt
 
-from util import extract_data, extract_labels, plotLoss, plotAllMetrics
+from util import (
+    extract_data,
+    extract_labels,
+    plotLoss,
+    plotAccuracy,
+    getModel,
+    plot_image,
+    plot_value_array,
+)
 from sklearn.model_selection import train_test_split
 from tensorflow.keras.layers import Conv2D, MaxPooling2D, Dense, Flatten
 from tensorflow.keras.models import Model, load_model
@@ -12,7 +21,7 @@ from tensorflow.keras import backend as K
 
 if len(sys.argv) != 11:
     print(
-        "error command must look like this : python classification.py -d <training set> --d1 <training labels> -t <testset> --t1 <test labels> --model <autoencoder h5>"
+        "Usage: python classification.py -d <training set> --d1 <training labels> -t <testset> --t1 <test labels> --model <autoencoder h5>"
     )
     sys.exit(-1)
 
@@ -22,7 +31,7 @@ try:
     opts, args = getopt.getopt(argv, "d:t:", ["d1=", "t1=", "model="])
 except getopt.GetoptError:
     print(
-        "error command must look like this : python classification.py -d <training set> --d1 <training labels> -t <testset> --t1 <test labels> --model <autoencoder h5>"
+        "Usage: python classification.py -d <training set> --d1 <training labels> -t <testset> --t1 <test labels> --model <autoencoder h5>"
     )
     sys.exit(1)
 for option, argument in opts:
@@ -39,7 +48,7 @@ for option, argument in opts:
         test_labels = argument
 
     elif option in ("--model"):
-        model = argument
+        modelName = argument
 
 train_data, x, y = extract_data(training_set)
 test_data, x, y = extract_data(training_labels)
@@ -56,32 +65,27 @@ test_data = test_data / 255.0
 train_labels = train_labels.reshape(-1, 1)
 test_labels = test_labels.reshape(-1, 1)
 
-train_X, valid_X, train_Y, valid_Y = train_test_split(
-    train_data, train_labels, test_size=0.25, shuffle=42
-)
-
 
 def getParameters():
     try:
-        batch_size = int(input("please enter batch_size : "))
+        batch_size = int(input("Please enter batch_size: "))
     except ValueError:
         print("batch_size must be an integer")
         sys.exit(1)
 
     try:
-        epochs = int(input("please enter epochs number : "))
+        epochs = int(input("Please enter epochs number: "))
     except ValueError:
         print("epochs must be an integer")
         sys.exit(1)
 
     try:
-        neurons_fc_layer = int(
-            input("please enter number of neurons in fc layer : "))
+        neurons_fc_layer = int(input("Please enter number of nodes in dense layer: "))
     except ValueError:
         print("neurons_fc_layer must be an integer")
         sys.exit(1)
 
-    return batch_size, epochs
+    return batch_size, epochs, neurons_fc_layer
 
 
 def evalRecall(y_actual, y_predicted):
@@ -102,10 +106,34 @@ def evalF(y_actual, y_predicted):
     return 2 * ((precision * recall) / (precision + recall + K.epsilon()))
 
 
-def fitModel(model, batch_size, epochs):
+def plotClassificationMetrics(model, name):
+
+    precision = model.history["evalPrecision"]
+    recall = model.history["evalRecall"]
+    f = model.history["evalF"]
+
+    # plt.figure()
+    plt.plot(f, label="f-score")
+    plt.plot(precision, label="precision")
+    plt.plot(recall, label="recall")
+    plt.xlabel("epochs")
+    plt.legend()
+    plt.show()
+    plt.savefig(name)
+
+
+def newModel():
+    batch_size, epochs, neurons_fc_layer = getParameters()
+    activationFunction = "sigmoid"
+
+    try:
+        autoencoder = load_model(modelName)
+    except IOError:
+        print("Model:", modelName, "doesn't exist")
+        sys.exit(1)
 
     output = Flatten()(autoencoder.layers[5].output)
-    output = Dense(128, activation="sigmoid")(output)
+    output = Dense(neurons_fc_layer, activation=activationFunction)(output)
     output = Dense(10)(output)
     model = Model(inputs=autoencoder.input, outputs=output)
 
@@ -121,6 +149,10 @@ def fitModel(model, batch_size, epochs):
         metrics=["accuracy", evalF, evalPrecision, evalRecall],
     )
 
+    train_X, valid_X, train_Y, valid_Y = train_test_split(
+        train_data, train_labels, test_size=0.25, shuffle=42
+    )
+
     model_train = model.fit(
         train_X,
         train_Y,
@@ -130,43 +162,66 @@ def fitModel(model, batch_size, epochs):
         validation_data=(valid_X, valid_Y),
     )
 
-    test_loss, test_acc, test_f, test_precision, test_recall = model.evaluate(
-        test_data, test_labels, verbose=2
-    )
-    print("\nTest accuracy:", test_acc)
+    while True:
+        try:
+            answer = int(
+                input(
+                    "Press 1 to save the model\nPress 2 to print training plots\nPress 3 to show predictions\n"
+                )
+            )
+        except ValueError:
+            print("Answer must be an integer")
 
-    plotAllMetrics(model_train, epochs)
-    return model_train
+        if answer == 1:
+            model.save(str(input("Provide the name of the file: ")))
+        elif answer == 2:
+            plotLoss(model_train, "model_loss.png")
+            plotAccuracy(model_train, "model_accuracy")
+            plotClassificationMetrics(model_train, "model_metrics.png")
+        elif answer == 3:
+            break
+        else:
+            print("Invalid input")
+
+    return model
+
+
+def modelPredict(model, test_data, test_labels):
+    predictions = model.predict(test_data)
+
+    num_rows = 5
+    num_cols = 3
+    num_images = num_rows * num_cols
+    plt.figure(figsize=(2 * 2 * num_cols, 2 * num_rows))
+    for i in range(num_images):
+        plt.subplot(num_rows, 2 * num_cols, 2 * i + 1)
+        plot_image(i, predictions[i], test_labels, test_data)
+        plt.subplot(num_rows, 2 * num_cols, 2 * i + 2)
+        plot_value_array(i, predictions[i], test_labels)
+        plt.tight_layout()
+    plt.savefig("prediction.png")
+    plt.show()
 
 
 if __name__ == "__main__":
-
-    batch_size, epochs = getParameters()
-
-    autoencoder = load_model(model)
-
-    model_train = fitModel(autoencoder, batch_size, epochs)
 
     while True:
         try:
             answer = int(
                 input(
-                    " press 1 if you want to repeat expiriment with different paremeters \n press 2 if you want to show plots \n press 3 if you want to categorize images \n "
+                    "Press 1 to train a new model\nPress 2 to load an existing model\nPress 3 to exit\n"
                 )
             )
         except ValueError:
-            print("answer must be an integer")
-            sys.exit(1)
+            print("Answer must be an integer")
 
-        if answer == 1:
-            # does it need to loead model again to not trian the same one?
-            batch_size, epochs = getParameters()
-            fitModel(autoencoder, batch_size, epochs)
-        # elif answer == 2:
-            # plotModelLoss(model_train, epochs, "models/loser.png")
+        if answer == 1:  # New Model
+            model = newModel()
+            modelPredict(model, test_data, test_labels)
+        elif answer == 2:  # Load Model
+            model = getModel()
+            modelPredict(model, test_data, test_labels)
         elif answer == 3:
-            # ask from user which parameters he wants to use
-            # categorize whatever this is
             break
         else:
-            sys.exit(1)
+            print("Invalid input")
