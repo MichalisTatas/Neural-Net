@@ -80,7 +80,8 @@ def getParameters():
         sys.exit(1)
 
     try:
-        neurons_fc_layer = int(input("Please enter number of nodes in dense layer: "))
+        neurons_fc_layer = int(
+            input("Please enter number of nodes in dense layer: "))
     except ValueError:
         print("neurons_fc_layer must be an integer")
         sys.exit(1)
@@ -118,8 +119,11 @@ def plotClassificationMetrics(model, name):
     plt.plot(recall, label="recall")
     plt.xlabel("epochs")
     plt.legend()
-    plt.show()
     plt.savefig(name)
+    plt.show()
+    plt.clf()
+    plt.cla()
+    plt.close()
 
 
 def newModel():
@@ -146,7 +150,7 @@ def newModel():
     model.compile(
         loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
         optimizer="adam",
-        metrics=["accuracy", evalF, evalPrecision, evalRecall],
+        metrics=["accuracy"],
     )
 
     train_X, valid_X, train_Y, valid_Y = train_test_split(
@@ -173,11 +177,13 @@ def newModel():
             print("Answer must be an integer")
 
         if answer == 1:
-            model.save(str(input("Provide the name of the file: ")))
+            # name = str(input("Provide the name of the file: ")) + ".h5"
+            model.save("classification.h5", save_format="h5")
+            print("Model saves as: classification.h5")
         elif answer == 2:
             plotLoss(model_train, "model_loss.png")
             plotAccuracy(model_train, "model_accuracy")
-            plotClassificationMetrics(model_train, "model_metrics.png")
+            # plotClassificationMetrics(model_train, "model_metrics.png")
         elif answer == 3:
             break
         else:
@@ -188,6 +194,8 @@ def newModel():
 
 def modelPredict(model, test_data, test_labels):
     predictions = model.predict(test_data)
+
+    print(predictions[0])
 
     num_rows = 5
     num_cols = 3

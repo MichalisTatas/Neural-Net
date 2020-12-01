@@ -57,15 +57,19 @@ def plotPrediction(model, data):
         plt.gray()
         ax.get_xaxis().set_visible(False)
         ax.get_yaxis().set_visible(False)
+    plt.savefig("autoencoder.png")
     plt.show()
-    plt.savefig("figure_1.png")
+    plt.show()
+    plt.clf()
+    plt.cla()
+    plt.close()
 
 
 def getAutoencoder(
     x,
     y,
-    activationFunction="softmax",
-    lastActivationFunction="sigmoid",
+    activationFunction="linear",
+    lastActivationFunction="linear",
     lossFunction="mean_squared_error",
     filters=(3, 3),
 ):
@@ -121,8 +125,8 @@ def getAutoencoder(
 
 def newModel():
     batch_size, epochs = getParameters()
-    activationFunction = "linear"
-    lastActivationFunction = "linear"
+    activationFunction = "softmax"
+    lastActivationFunction = "softmax"
     filters = (3, 3)
 
     autoencoder = getAutoencoder(
@@ -148,6 +152,7 @@ def newModel():
     )
 
     while True:
+        answer = 0
         try:
             answer = int(
                 input(

@@ -56,6 +56,9 @@ def plotLoss(model, name):
     plt.legend(["train", "validation"], loc="upper left")
     plt.savefig(name)
     plt.show()
+    plt.clf()
+    plt.cla()
+    plt.close()
 
 
 def plotAccuracy(model, name):
@@ -69,6 +72,9 @@ def plotAccuracy(model, name):
     plt.legend(["train", "validation"], loc="upper left")
     plt.savefig(name)
     plt.show()
+    plt.clf()
+    plt.cla()
+    plt.close()
 
 
 class_names = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"]
@@ -108,4 +114,4 @@ def plot_value_array(i, predictions_array, true_label):
     predicted_label = np.argmax(predictions_array)
 
     thisplot[predicted_label].set_color("red")
-    thisplot[true_label].set_color("blue")
+    thisplot[int(true_label)].set_color("blue")
