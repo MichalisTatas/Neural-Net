@@ -30,26 +30,30 @@ def extract_labels(filename):
         return labels
 
 
-def plotLoss(model, name):
+def plotLoss(model, epochs, name):
     # summarize history for loss
-    plt.plot(model.history["loss"])
-    plt.plot(model.history["val_loss"])
+    epochs = range(epochs)
+    plt.figure()
+    plt.plot(epochs, model.history["loss"])
+    plt.plot(epochs, model.history["val_loss"])
     plt.title("model loss")
     plt.ylabel("loss")
     plt.xlabel("epoch")
-    plt.legend(["train", "test"], loc="upper left")
+    plt.legend(["train", "validation"], loc="upper left")
     plt.show()
     plt.savefig(name)
 
 
-def plotAccuracy(model, name):
+def plotAccuracy(model, epochs, name):
     # summarize history for accuracy
-    plt.plot(model.history["accuracy"])
-    plt.plot(model.history["val_accuracy"])
+    epochs = range(epochs)
+    plt.figure()
+    plt.plot(epochs, model.history["accuracy"])
+    plt.plot(epochs, model.history["val_accuracy"])
     plt.title("model accuracy")
     plt.ylabel("accuracy")
     plt.xlabel("epoch")
-    plt.legend(["train", "test"], loc="upper left")
+    plt.legend(["train", "validation"], loc="upper left")
     plt.show()
     plt.savefig(name)
 

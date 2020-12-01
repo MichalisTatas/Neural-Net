@@ -3,7 +3,7 @@ import numpy as np
 import sys
 import getopt
 
-from util import extract_data, extract_labels, plotModelLoss, plotAllMetrics
+from util import extract_data, extract_labels, plotLoss, plotAllMetrics
 from sklearn.model_selection import train_test_split
 from tensorflow.keras.layers import Conv2D, MaxPooling2D, Dense, Flatten
 from tensorflow.keras.models import Model, load_model
@@ -75,7 +75,8 @@ def getParameters():
         sys.exit(1)
 
     try:
-        neurons_fc_layer = int(input("please enter number of neurons in fc layer : "))
+        neurons_fc_layer = int(
+            input("please enter number of neurons in fc layer : "))
     except ValueError:
         print("neurons_fc_layer must be an integer")
         sys.exit(1)
@@ -161,8 +162,8 @@ if __name__ == "__main__":
             # does it need to loead model again to not trian the same one?
             batch_size, epochs = getParameters()
             fitModel(autoencoder, batch_size, epochs)
-        elif answer == 2:
-            plotModelLoss(model_train, epochs, "models/loser.png")
+        # elif answer == 2:
+            # plotModelLoss(model_train, epochs, "models/loser.png")
         elif answer == 3:
             # ask from user which parameters he wants to use
             # categorize whatever this is

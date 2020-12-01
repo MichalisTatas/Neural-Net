@@ -11,11 +11,9 @@ from tensorflow.keras.metrics import MeanSquaredError, AUC, Accuracy
 
 if len(sys.argv) != 2:
     print(
-        "error command must look like this : python autoencoder.py path to train file"
+        "error command must look like this : python autoencoder.py <path to train file>"
     )
     sys.exit(-1)
-
-print(str(sys.argv[1]))
 
 inputFile = str(sys.argv[1])
 
@@ -24,7 +22,7 @@ data, x, y = extract_data(inputFile)
 data = data.reshape(-1, x, y, 1)  # img_num * x * y * 1
 data = data / np.max(data)
 
-train_X, valid_X, train_ground, valid_ground = train_test_split(
+train_X, valid_X, train_Y, valid_Y = train_test_split(
     data, data, test_size=0.25, shuffle=42
 )
 
@@ -42,12 +40,6 @@ def getParameters():
         print("epochs must be an integer")
         sys.exit(1)
 
-    try:
-        neurons_fc_layer = int(input("please enter number of neurons in fc layer : "))
-    except ValueError:
-        print("neurons_fc_layer must be an integer")
-        sys.exit(1)
-
     return batch_size, epochs
 
 
@@ -62,48 +54,48 @@ def getAutoencoder(
     inChannel = 1
     input_img = Input(shape=(x, y, inChannel))
 
-    def encoder(input_img):
-        conv1 = Conv2D(32, (3, 3), activation=activationFunction, padding="same")(
+    def encoder(input_img, filters):
+        conv1 = Conv2D(32, filters, activation=activationFunction, padding="same")(
             input_img
         )  # 28 x 28 x 32
         pool1 = MaxPooling2D(pool_size=(2, 2))(conv1)  # 14 x 14 x 32
 
-        conv2 = Conv2D(64, (3, 3), activation=activationFunction, padding="same")(
+        conv2 = Conv2D(64, filters, activation=activationFunction, padding="same")(
             pool1
         )  # 14 x 14 x 64
         pool2 = MaxPooling2D(pool_size=(2, 2))(conv2)  # 7 x 7 x 64
 
-        conv3 = Conv2D(128, (3, 3), activation=activationFunction, padding="same")(
+        conv3 = Conv2D(128, filters, activation=activationFunction, padding="same")(
             pool2
         )  # 7 x 7 x 128
 
         return conv3
 
-    def decoder(input_conv):
-        conv3 = Conv2D(128, (3, 3), activation=activationFunction, padding="same")(
+    def decoder(input_conv, filters):
+        conv3 = Conv2D(128, filters, activation=activationFunction, padding="same")(
             input_conv
         )  # 7 x 7 x 128
         up3 = UpSampling2D((2, 2))(conv3)  # 14 x 14 x 128
 
-        conv2 = Conv2D(64, (3, 3), activation=activationFunction, padding="same")(
+        conv2 = Conv2D(64, filters, activation=activationFunction, padding="same")(
             up3
         )  # 14 x 14 x 64
         up2 = UpSampling2D((2, 2))(conv2)  # 28 x 28 x 64
 
-        covn1 = Conv2D(1, (3, 3), activation=lastActivationFunction, padding="same")(
+        covn1 = Conv2D(1, filters, activation=lastActivationFunction, padding="same")(
             up2
         )  # 28 x 28 x 1
 
         return covn1
 
-    def autoencoder(input_img):
-        return decoder(encoder(input_img))
+    def autoencoder(input_img, filters):
+        return decoder(encoder(input_img, filters), filters)
 
-    autoencoder = Model(input_img, autoencoder(input_img))
+    autoencoder = Model(input_img, autoencoder(input_img, (3, 3)))
     autoencoder.compile(
         loss=lossFunction,
         optimizer=RMSprop(),
-        metrics=[MeanSquaredError(), AUC(), Accuracy()],
+        metrics="accuracy",
     )
 
     return autoencoder
@@ -116,20 +108,21 @@ if __name__ == "__main__":
     autoencoder = getAutoencoder(
         x=x,
         y=y,
-        activationFunction="softmax",
-        lastActivationFunction="sigmoid",
+        activationFunction="linear",
+        lastActivationFunction="linear",
         lossFunction="mean_squared_error",
     )
     autoencoder.summary()
 
     autoencoder_train = autoencoder.fit(
-        train_X, train_ground, batch_size=batch_size, epochs=epochs
+        train_X, train_Y, batch_size=batch_size, epochs=epochs, verbose=1, validation_data=(valid_X, valid_Y)
     )
-    plotLoss(autoencoder_train, "autoencoder_softmax_sigmoid_128_50_loss.png")
-    plotAccuracy(autoencoder_train, "autoencoder_softmax_sigmoid_128_50_accuracy.png")
+    # autoencoder.save("models/autoencoder_linear_128_20_2-2")
+    plotLoss(autoencoder_train, epochs, "autoencoder_linear_128_20_loss.png")
+    plotAccuracy(autoencoder_train, epochs,
+                 "autoencoder_linear_128_20_accuracy.png")
 
-    results = autoencoder.evaluate(valid_X, valid_ground, batch_size=128)
-    autoencoder.save("models/autoencoder_softmax_sigmoid")
+    results = autoencoder.evaluate(valid_X, valid_Y, batch_size=128)
     print("test loss, test acc:", results)
 
     pred = autoencoder.predict(data)
@@ -151,14 +144,14 @@ if __name__ == "__main__":
             autoencoder = getAutoencoder(
                 x=x,
                 y=y,
-                activationFunction="softmax",
-                lastActivationFunction="sigmoid",
+                activationFunction="linear",
+                lastActivationFunction="linear",
                 lossFunction="mean_squared_error",
             )
             autoencoder.summary()
 
             autoencoder_train = autoencoder.fit(
-                train_X, train_ground, batch_size=batch_size, epochs=epochs
+                train_X, train_Y, batch_size=batch_size, epochs=epochs
             )
 
             results = autoencoder.evaluate(data, data, batch_size=128)
