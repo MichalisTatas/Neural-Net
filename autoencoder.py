@@ -10,21 +10,16 @@ from tensorflow.keras.optimizers import RMSprop
 from tensorflow.keras.metrics import MeanSquaredError, AUC, Accuracy
 
 if len(sys.argv) != 2:
-    print(
-        "error command must look like this : python autoencoder.py <path to train file>"
-    )
+    print("Usage: python autoencoder.py <path to train file>")
     sys.exit(-1)
 
 inputFile = str(sys.argv[1])
 
 data, x, y = extract_data(inputFile)
 
-data = data.reshape(-1, x, y, 1)  # img_num * x * y * 1
+inChannel = 1
+data = data.reshape(-1, x, y, inChannel)
 data = data / np.max(data)
-
-train_X, valid_X, train_Y, valid_Y = train_test_split(
-    data, data, test_size=0.25, shuffle=42
-)
 
 
 def getParameters():
@@ -43,15 +38,37 @@ def getParameters():
     return batch_size, epochs
 
 
+def plotPrediction(model, data):
+    predictions = model.predict(data)
+
+    n = 10
+    plt.figure(figsize=(20, 4))
+    for i in range(1, n + 1):
+        # Display original
+        ax = plt.subplot(2, n, i)
+        plt.imshow(data[i].reshape(28, 28))
+        plt.gray()
+        ax.get_xaxis().set_visible(False)
+        ax.get_yaxis().set_visible(False)
+
+        # Display reconstruction
+        ax = plt.subplot(2, n, i + n)
+        plt.imshow(predictions[i].reshape(28, 28))
+        plt.gray()
+        ax.get_xaxis().set_visible(False)
+        ax.get_yaxis().set_visible(False)
+    plt.show()
+
+
 def getAutoencoder(
     x,
     y,
     activationFunction="softmax",
     lastActivationFunction="sigmoid",
     lossFunction="mean_squared_error",
+    filters=(3, 3),
 ):
 
-    inChannel = 1
     input_img = Input(shape=(x, y, inChannel))
 
     def encoder(input_img, filters):
@@ -91,7 +108,7 @@ def getAutoencoder(
     def autoencoder(input_img, filters):
         return decoder(encoder(input_img, filters), filters)
 
-    autoencoder = Model(input_img, autoencoder(input_img, (3, 3)))
+    autoencoder = Model(input_img, autoencoder(input_img, filters))
     autoencoder.compile(
         loss=lossFunction,
         optimizer=RMSprop(),
@@ -101,89 +118,90 @@ def getAutoencoder(
     return autoencoder
 
 
-if __name__ == "__main__":
-
+def newModel():
     batch_size, epochs = getParameters()
+    activationFunction = "linear"
+    lastActivationFunction = "linear"
+    filters = (3, 3)
 
     autoencoder = getAutoencoder(
         x=x,
         y=y,
-        activationFunction="linear",
-        lastActivationFunction="linear",
-        lossFunction="mean_squared_error",
+        activationFunction=activationFunction,
+        lastActivationFunction=lastActivationFunction,
+        filters=filters,
     )
     autoencoder.summary()
 
-    autoencoder_train = autoencoder.fit(
-        train_X, train_Y, batch_size=batch_size, epochs=epochs, verbose=1, validation_data=(valid_X, valid_Y)
+    train_X, valid_X, train_Y, valid_Y = train_test_split(
+        data, data, test_size=0.25, shuffle=42
     )
-    # autoencoder.save("models/autoencoder_linear_128_20_2-2")
-    plotLoss(autoencoder_train, epochs, "autoencoder_linear_128_20_loss.png")
-    plotAccuracy(autoencoder_train, epochs,
-                 "autoencoder_linear_128_20_accuracy.png")
 
-    results = autoencoder.evaluate(valid_X, valid_Y, batch_size=128)
-    print("test loss, test acc:", results)
-
-    pred = autoencoder.predict(data)
+    autoencoder_train = autoencoder.fit(
+        train_X,
+        train_Y,
+        batch_size=batch_size,
+        epochs=epochs,
+        verbose=1,
+        validation_data=(valid_X, valid_Y),
+    )
 
     while True:
         try:
             answer = int(
                 input(
-                    " press 1 if you want to repeat expiriment with different paremeters \n press 2 if you want to show plots \n press 3 if you want to save model with last parameters "
+                    "Press 1 to save the model\nPress 2 to print training plots\nPress 3 to continue\n"
                 )
             )
         except ValueError:
-            print("answer must be an integer")
-            sys.exit(1)
+            print("Answer must be an integer")
 
         if answer == 1:
-            batch_size, epochs = getParameters()
-
-            autoencoder = getAutoencoder(
-                x=x,
-                y=y,
-                activationFunction="linear",
-                lastActivationFunction="linear",
-                lossFunction="mean_squared_error",
-            )
-            autoencoder.summary()
-
-            autoencoder_train = autoencoder.fit(
-                train_X, train_Y, batch_size=batch_size, epochs=epochs
-            )
-
-            results = autoencoder.evaluate(data, data, batch_size=128)
-            print("test loss, test acc:", results)
-
-            pred = autoencoder.predict(data)
-
+            autoencoder.save(str(input("Provide the name of the file: ")))
         elif answer == 2:
-            plt.figure(figsize=(20, 4))
-            print("Test Images")
-            for i in range(10):
-                plt.subplot(2, 10, i + 1)
-                plt.imshow(data[i, ..., 0], cmap="gray")
-            plt.show()
-            plt.savefig("original.png")
-            plt.figure(figsize=(20, 4))
-            print("Reconstruction of Test Images")
-            for i in range(10):
-                plt.subplot(2, 10, i + 1)
-                plt.imshow(pred[i, ..., 0], cmap="gray")
-            plt.show()
-            plt.savefig("result.png")
-
+            plotLoss(autoencoder_train, "model_loss.png")
+            plotAccuracy(autoencoder_train, "model_accuracy")
+            plotPrediction(data)
         elif answer == 3:
-            # havent tested the # ones
-            # try:
-            #     answer = str(input("please give path : "))
-            # except ValueError:
-            #     print ("path must be a string")
-            #     sys.exit(1)
-            # autoencoder.save(path)
             break
-
         else:
-            sys.exit(1)
+            print("Invalid input")
+
+    return autoencoder
+
+
+def getModel():
+    while True:
+        file = str(input("Please provide the file name: "))
+        try:
+            model = load_model(file)
+            break
+        except IOError:
+            print("File name:", file, "dones't exist")
+        except ImportError:
+            print("File is corrupted")
+
+    return model
+
+
+if __name__ == "__main__":
+
+    while True:
+        try:
+            answer = int(
+                input(
+                    "Press 1 to train a new model\nPress 2 to load an existing model\nPress 3 to exit\n"
+                )
+            )
+        except ValueError:
+            print("Answer must be an integer")
+
+        if answer == 1:  # New Model
+            autoencoder = newModel()
+        elif answer == 2:  # Load Model
+            autoencoder = getModel()
+            plotPrediction(autoencoder, data)
+        elif answer == 3:
+            break
+        else:
+            print("Invalid input")
