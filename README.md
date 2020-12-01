@@ -1,4 +1,8 @@
-sto autoencoder menei mono na ftiaxnoume gia apantisi 2 ta diagrammata pou zitaei
+episis leei na exoume ekpedeumena montela kai gia ta 2 erwtimata
+
+na doume an getParameters idio kai sta dio wste n bei utils
+
+sto autoencoder menei mono na ftiaxnoume gia apantisi 2 ta diagrammata pou zitaei sin na doume uperparametrous lelelle
 
 kati parksena warnings to autoencoder alla mpourdes den epireazoun
 

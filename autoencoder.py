@@ -24,6 +24,15 @@ print(str(sys.argv[1]))
 
 inputFile = (str(sys.argv[1]))
 
+data, x, y = extract_data(inputFile)
+
+data = data.reshape(-1, x, y, 1)  # img_num * x * y * 1
+data = data / np.max(data)
+
+train_X, valid_X, train_ground, valid_ground = train_test_split(
+    data, data, test_size=0.25, shuffle=42
+)
+
 def getParameters():
     try:
         batch_size = int(input("please enter batch_size : "))
@@ -43,17 +52,6 @@ def getParameters():
         print ("neurons_fc_layer must be an integer")
         sys.exit(1)
     return batch_size, epochs
-
-
-data, x, y = extract_data(inputFile)
-
-data = data.reshape(-1, x, y, 1)  # img_num * x * y * 1
-data = data / np.max(data)
-
-train_X, valid_X, train_ground, valid_ground = train_test_split(
-    data, data, test_size=0.25, shuffle=42
-)
-
 
 def getAutoencoder(
     x,
@@ -117,23 +115,20 @@ def getAutoencoder(
 
 #     batch_size, epochs = getParameters()
 
-#     autoencoder = getAutoencoder(
-#         x=x, y=y, activationFunction="softmax", lastActivationFunction="sigmoid", lossFunction="mean_squared_error")
-#     autoencoder.summary()
+#     # autoencoder = getAutoencoder(
+#     #     x=x, y=y, activationFunction="softmax", lastActivationFunction="sigmoid", lossFunction="mean_squared_error")
+#     # autoencoder.summary()
 
-#     # petaei error lelelele
 #     # autoencoder_train = autoencoder.fit(train_X, train_ground, batch_size=batch_size,
 #     #                                     epochs=epochs, verbose=1, validation_data=(valid_X, valid_ground))
 
-#     autoencoder_train = autoencoder.fit(train_X, train_ground, batch_size=batch_size,
-#                                         epochs=epochs)
 
-#     autoencoder.save("models/autoencoder_softmax_sigmoid")
+#     # autoencoder.save("models/autoencoder_softmax_sigmoid")
 #     # ploting loss graph
 #     # plotModelLoss(autoencoder_train, epochs,
 #     #               "models/model_softmax_sigmoid/plot.png")
 
-#     # autoencoder = load_model("models/autoencoder_softmax_sigmoid")
+#     autoencoder = load_model("models/autoencoder_softmax_sigmoid")
 
 #     results = autoencoder.evaluate(data, data, batch_size=128)
 #     print("test loss, test acc:", results)
@@ -210,7 +205,6 @@ if __name__ == "__main__":
             plt.savefig("result.png")
 
         elif (answer == 3):
-
             # havent tested the # ones
             # try:
             #     answer = str(input("please give path : "))
