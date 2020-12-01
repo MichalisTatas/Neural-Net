@@ -51,6 +51,7 @@ def getParameters():
     except ValueError:
         print ("neurons_fc_layer must be an integer")
         sys.exit(1)
+
     return batch_size, epochs
 
 def getAutoencoder(
@@ -109,45 +110,6 @@ def getAutoencoder(
     )
 
     return autoencoder
-
-
-# if __name__ == "__main__":
-
-#     batch_size, epochs = getParameters()
-
-#     # autoencoder = getAutoencoder(
-#     #     x=x, y=y, activationFunction="softmax", lastActivationFunction="sigmoid", lossFunction="mean_squared_error")
-#     # autoencoder.summary()
-
-#     # autoencoder_train = autoencoder.fit(train_X, train_ground, batch_size=batch_size,
-#     #                                     epochs=epochs, verbose=1, validation_data=(valid_X, valid_ground))
-
-
-#     # autoencoder.save("models/autoencoder_softmax_sigmoid")
-#     # ploting loss graph
-#     # plotModelLoss(autoencoder_train, epochs,
-#     #               "models/model_softmax_sigmoid/plot.png")
-
-#     autoencoder = load_model("models/autoencoder_softmax_sigmoid")
-
-#     results = autoencoder.evaluate(data, data, batch_size=128)
-#     print("test loss, test acc:", results)
-
-#     pred = autoencoder.predict(data)
-#     plt.figure(figsize=(20, 4))
-#     print("Test Images")
-#     for i in range(10):
-#         plt.subplot(2, 10, i + 1)
-#         plt.imshow(data[i, ..., 0], cmap="gray")
-#     plt.show()
-#     plt.savefig("original.png")
-#     plt.figure(figsize=(20, 4))
-#     print("Reconstruction of Test Images")
-#     for i in range(10):
-#         plt.subplot(2, 10, i + 1)
-#         plt.imshow(pred[i, ..., 0], cmap="gray")
-#     plt.show()
-#     plt.savefig("result.png")
 
 if __name__ == "__main__":
 

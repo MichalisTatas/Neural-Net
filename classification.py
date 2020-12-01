@@ -3,7 +3,7 @@ import numpy as np
 import sys
 import getopt
 
-from util import extract_data, extract_labels, plotModelLoss
+from util import extract_data, extract_labels, plotModelLoss, plotAllMetrics
 from sklearn.model_selection import train_test_split
 from tensorflow.keras.layers import Conv2D, MaxPooling2D, Dense, Flatten
 from tensorflow.keras.models import Model, load_model
@@ -11,7 +11,7 @@ from tensorflow.keras.metrics import Accuracy
 from keras import backend as K
 
 if len(sys.argv) != 11:
-    print ("error command must look like this : python classification.py -d <training set> -d1 <training labels> -t <testset> -t1 <test labels> -model <autoencoder h5>")
+    print ("error command must look like this : python classification.py -d <training set> --d1 <training labels> -t <testset> --t1 <test labels> --model <autoencoder h5>")
     sys.exit(-1)
 
 argv = sys.argv[1:]
@@ -19,7 +19,7 @@ argv = sys.argv[1:]
 try:
     opts, args = getopt.getopt(argv,"d:t:", ["d1=","t1=","model="])
 except getopt.GetoptError:
-        print ("error command must look like this : python classification.py -d <training set> -d1 <training labels> -t <testset> -t1 <test labels> -model <autoencoder h5>")
+        print ("error command must look like this : python classification.py -d <training set> --d1 <training labels> -t <testset> --t1 <test labels> --model <autoencoder h5>")
         sys.exit(1)
 for option, argument in opts:
     if   option == '-d':
@@ -76,6 +76,7 @@ def getParameters():
     except ValueError:
         print ("neurons_fc_layer must be an integer")
         sys.exit(1)
+
     return batch_size, epochs
 
 def evalRecall(y_actual, y_predicted):
@@ -117,9 +118,10 @@ def fitModel(model, batch_size, epochs):
         validation_data=(valid_X, valid_Y),
     )
 
-    test_loss, test_acc, test_f1, test_precision, test_recall = model.evaluate(test_data, test_labels, verbose=2)
+    test_loss, test_acc, test_f, test_precision, test_recall = model.evaluate(test_data, test_labels, verbose=2)
     print("\nTest accuracy:", test_acc)
 
+    plotAllMetrics(model_train, epochs)
     return model_train
 
 
