@@ -30,20 +30,32 @@ def extract_labels(filename):
         return labels
 
 
-def plotModelLoss(model_train, epochs, name):
-    loss = model_train.history["loss"]
-    val_loss = model_train.history["val_loss"]
-    epochs = range(epochs)
-    plt.figure()
-    plt.plot(epochs, loss, "bo", label="Training loss")
-    plt.plot(epochs, val_loss, "b", label="Validation loss")
-    plt.title("Training and validation loss")
-    plt.legend()
-    # plt.show()
+def plotLoss(model, name):
+    # summarize history for loss
+    plt.plot(model.history["loss"])
+    plt.plot(model.history["val_loss"])
+    plt.title("model loss")
+    plt.ylabel("loss")
+    plt.xlabel("epoch")
+    plt.legend(["train", "test"], loc="upper left")
+    plt.show()
+    plt.savefig(name)
+
+
+def plotAccuracy(model, name):
+    # summarize history for accuracy
+    plt.plot(model.history["accuracy"])
+    plt.plot(model.history["val_accuracy"])
+    plt.title("model accuracy")
+    plt.ylabel("accuracy")
+    plt.xlabel("epoch")
+    plt.legend(["train", "test"], loc="upper left")
+    plt.show()
     plt.savefig(name)
 
 
 def plotAllMetrics(model, epochs):
+
     epochs = range(epochs)
 
     loss = model.history["loss"]
@@ -51,6 +63,7 @@ def plotAllMetrics(model, epochs):
     precision = model.history["evalPrecision"]
     recall = model.history["evalRecall"]
     f = model.history["evalF"]
+
     plt.plot(epochs, loss, label="loss")
     plt.plot(epochs, accuracy, label="accuracy")
 

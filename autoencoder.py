@@ -2,7 +2,7 @@ import sys
 import numpy as np
 import matplotlib.pyplot as plt
 
-from util import extract_data, plotModelLoss
+from util import extract_data, plotLoss, plotAccuracy
 from sklearn.model_selection import train_test_split
 from tensorflow.keras.layers import Input, Conv2D, MaxPooling2D, UpSampling2D
 from tensorflow.keras.models import Model, load_model
@@ -125,8 +125,11 @@ if __name__ == "__main__":
     autoencoder_train = autoencoder.fit(
         train_X, train_ground, batch_size=batch_size, epochs=epochs
     )
+    plotLoss(autoencoder_train, "autoencoder_softmax_sigmoid_128_50_loss.png")
+    plotAccuracy(autoencoder_train, "autoencoder_softmax_sigmoid_128_50_accuracy.png")
 
     results = autoencoder.evaluate(valid_X, valid_ground, batch_size=128)
+    autoencoder.save("models/autoencoder_softmax_sigmoid")
     print("test loss, test acc:", results)
 
     pred = autoencoder.predict(data)
@@ -187,7 +190,6 @@ if __name__ == "__main__":
             #     print ("path must be a string")
             #     sys.exit(1)
             # autoencoder.save(path)
-            autoencoder.save("models/autoencoder_softmax_sigmoid")
             break
 
         else:
