@@ -58,6 +58,7 @@ def plotPrediction(model, data):
         ax.get_xaxis().set_visible(False)
         ax.get_yaxis().set_visible(False)
     plt.show()
+    plt.savefig("figure_1.png")
 
 
 def getAutoencoder(
@@ -161,7 +162,6 @@ def newModel():
         elif answer == 2:
             plotLoss(autoencoder_train, "model_loss.png")
             plotAccuracy(autoencoder_train, "model_accuracy")
-            plotPrediction(data)
         elif answer == 3:
             break
         else:
@@ -198,6 +198,7 @@ if __name__ == "__main__":
 
         if answer == 1:  # New Model
             autoencoder = newModel()
+            plotPrediction(autoencoder, data)
         elif answer == 2:  # Load Model
             autoencoder = getModel()
             plotPrediction(autoencoder, data)
