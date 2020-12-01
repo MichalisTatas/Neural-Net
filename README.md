@@ -1,3 +1,21 @@
+
+to do :
+na tsekaroume an leitoyrgoun kala dld ti kanoun ontws stis eikones ektos apo score ktl
+
+diagrammata
+
+na doume ligo hyperparameters ti ginetai telika
+
+to classification 8elei ligo douleia me grafimata ktl
+
+
+alla :
+metrics : 
+https://datascience.stackexchange.com/questions/45165/how-to-get-accuracy-f1-precision-and-recall-for-a-keras-model
+
+https://machinelearningmastery.com/how-to-calculate-precision-recall-f1-and-more-for-deep-learning-models/
+
+
 episis leei na exoume ekpedeumena montela kai gia ta 2 erwtimata
 
 na doume an getParameters idio kai sta dio wste n bei utils

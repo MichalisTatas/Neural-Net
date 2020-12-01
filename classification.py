@@ -8,6 +8,7 @@ from sklearn.model_selection import train_test_split
 from tensorflow.keras.layers import Conv2D, MaxPooling2D, Dense, Flatten
 from tensorflow.keras.models import Model, load_model
 from tensorflow.keras.metrics import Accuracy
+from keras import backend as K
 
 if len(sys.argv) != 11:
     print ("error command must look like this : python classification.py -d <training set> -d1 <training labels> -t <testset> -t1 <test labels> -model <autoencoder h5>")
@@ -77,6 +78,17 @@ def getParameters():
         sys.exit(1)
     return batch_size, epochs
 
+def evalRecall(y_actual, y_predicted):
+    return (K.sum(K.round(K.clip(y_actual * y_predicted, 0, 1))) / (K.sum(K.round(K.clip(y_actual, 0, 1))) + K.epsilon()))
+
+def evalPrecision(y_actual, y_predicted):
+    return (K.sum(K.round(K.clip(y_actual * y_predicted, 0, 1))) / (K.sum(K.round(K.clip(y_predicted, 0, 1))) + K.epsilon()))
+
+def evalF(y_actual, y_predicted):
+    recall = evalRecall(y_actual, y_predicted)
+    precision = evalPrecision(y_actual, y_predicted)
+    return 2*((precision * recall)/(precision + recall + K.epsilon()))
+
 def fitModel(model, batch_size, epochs):
 
     output = Flatten()(autoencoder.layers[5].output)
@@ -93,7 +105,7 @@ def fitModel(model, batch_size, epochs):
     model.compile(
         loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
         optimizer="adam",
-        metrics=["accuracy"],
+        metrics=["accuracy", evalF, evalPrecision, evalRecall],
     )
 
     model_train = model.fit(
@@ -105,7 +117,7 @@ def fitModel(model, batch_size, epochs):
         validation_data=(valid_X, valid_Y),
     )
 
-    test_loss, test_acc = model.evaluate(test_data, test_labels, verbose=2)
+    test_loss, test_acc, test_f1, test_precision, test_recall = model.evaluate(test_data, test_labels, verbose=2)
     print("\nTest accuracy:", test_acc)
 
     return model_train
