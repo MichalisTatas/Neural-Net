@@ -9,20 +9,15 @@ from tensorflow.keras.models import Model, load_model
 from tensorflow.keras.optimizers import RMSprop
 from tensorflow.keras.metrics import MeanSquaredError, AUC, Accuracy
 
-    # ari8mos sineliktikwn strwmatwn
-    # mege8ow sineliktinwn filtrwn
-    # ari8mos sineliktikwn filtrwn ana strwma
-    # epochs
-    # batch_size
-    # pli8os neurwnwn sto fc layer
-
 if len(sys.argv) != 2:
-    print ("error command must look like this : python autoencoder.py path to train file")
+    print(
+        "error command must look like this : python autoencoder.py path to train file"
+    )
     sys.exit(-1)
 
 print(str(sys.argv[1]))
 
-inputFile = (str(sys.argv[1]))
+inputFile = str(sys.argv[1])
 
 data, x, y = extract_data(inputFile)
 
@@ -33,26 +28,28 @@ train_X, valid_X, train_ground, valid_ground = train_test_split(
     data, data, test_size=0.25, shuffle=42
 )
 
+
 def getParameters():
     try:
         batch_size = int(input("please enter batch_size : "))
     except ValueError:
-        print ("batch_size must be an integer")
+        print("batch_size must be an integer")
         sys.exit(1)
 
     try:
         epochs = int(input("please enter epochs number : "))
     except ValueError:
-        print ("epochs must be an integer")
+        print("epochs must be an integer")
         sys.exit(1)
 
     try:
         neurons_fc_layer = int(input("please enter number of neurons in fc layer : "))
     except ValueError:
-        print ("neurons_fc_layer must be an integer")
+        print("neurons_fc_layer must be an integer")
         sys.exit(1)
 
     return batch_size, epochs
+
 
 def getAutoencoder(
     x,
@@ -111,46 +108,62 @@ def getAutoencoder(
 
     return autoencoder
 
+
 if __name__ == "__main__":
 
     batch_size, epochs = getParameters()
 
     autoencoder = getAutoencoder(
-        x=x, y=y, activationFunction="softmax", lastActivationFunction="sigmoid", lossFunction="mean_squared_error")
+        x=x,
+        y=y,
+        activationFunction="softmax",
+        lastActivationFunction="sigmoid",
+        lossFunction="mean_squared_error",
+    )
     autoencoder.summary()
 
-    autoencoder_train = autoencoder.fit(train_X, train_ground, batch_size=batch_size,
-                                        epochs=epochs)
+    autoencoder_train = autoencoder.fit(
+        train_X, train_ground, batch_size=batch_size, epochs=epochs
+    )
 
-    results = autoencoder.evaluate(data, data, batch_size=128)
+    results = autoencoder.evaluate(valid_X, valid_ground, batch_size=128)
     print("test loss, test acc:", results)
 
     pred = autoencoder.predict(data)
 
-
     while True:
         try:
-            answer = int(input(" press 1 if you want to repeat expiriment with different paremeters \n press 2 if you want to show plots \n press 3 if you want to save model with last parameters "))
+            answer = int(
+                input(
+                    " press 1 if you want to repeat expiriment with different paremeters \n press 2 if you want to show plots \n press 3 if you want to save model with last parameters "
+                )
+            )
         except ValueError:
-            print ("answer must be an integer")
+            print("answer must be an integer")
             sys.exit(1)
 
-        if (answer == 1):
+        if answer == 1:
             batch_size, epochs = getParameters()
 
             autoencoder = getAutoencoder(
-                x=x, y=y, activationFunction="softmax", lastActivationFunction="sigmoid", lossFunction="mean_squared_error")
+                x=x,
+                y=y,
+                activationFunction="softmax",
+                lastActivationFunction="sigmoid",
+                lossFunction="mean_squared_error",
+            )
             autoencoder.summary()
 
-            autoencoder_train = autoencoder.fit(train_X, train_ground, batch_size=batch_size,
-                                                epochs=epochs)
+            autoencoder_train = autoencoder.fit(
+                train_X, train_ground, batch_size=batch_size, epochs=epochs
+            )
 
             results = autoencoder.evaluate(data, data, batch_size=128)
             print("test loss, test acc:", results)
 
             pred = autoencoder.predict(data)
 
-        elif (answer == 2):
+        elif answer == 2:
             plt.figure(figsize=(20, 4))
             print("Test Images")
             for i in range(10):
@@ -166,7 +179,7 @@ if __name__ == "__main__":
             plt.show()
             plt.savefig("result.png")
 
-        elif (answer == 3):
+        elif answer == 3:
             # havent tested the # ones
             # try:
             #     answer = str(input("please give path : "))
